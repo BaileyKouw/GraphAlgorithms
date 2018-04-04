@@ -7,6 +7,7 @@ package graphalgorithms;
 public class GraphAlgorithms {
     public static void main(String[] args) {
         // this is gonna be neat
+        System.out.println("did this work?");
     }
     
 }
