@@ -34,7 +34,31 @@ class Graph {
         }
     }
     public void printEach() {
-        
+        System.out.print(" ");
+        for(int i = 0; i < n; i++) {
+            System.out.print("  " + vert[i]);
+        }
+        System.out.println();
+        for(int i = 0; i < n; i++) {
+            System.out.print(vert[i]);
+            for(int j = 0; j < n; j++) {
+                System.out.print("  " + eString[i][j]);
+            }
+            System.out.println();
+        }
+        System.out.println();
+        System.out.print(" ");
+        for(int i = 0; i < n; i++) {
+            System.out.print("  " + vert[i]);
+        }
+        System.out.println();
+        for(int i = 0; i < n; i++) {
+            System.out.print(vert[i]);
+            for(int j = 0; j < n; j++) {
+                System.out.print("  " + edge[i][j]);
+            }
+            System.out.println();
+        }
     }
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -76,5 +100,6 @@ class GraphAlgorithms {
         }   //end of try
         
         Graph g = new Graph(n, vert, eTemp);
+        g.printEach();
     }
 }
