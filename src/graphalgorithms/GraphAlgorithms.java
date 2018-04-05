@@ -11,10 +11,30 @@ import java.io.IOException;
  * Overview: 
  */
 class Graph {
-    public Graph(){};
-    public int[][] fill(String[][] stringIn, int[][] intIn) {
+    public int n;
+    public String[] vert;
+    public int[][] edge;
+    public String[][] eString;
+    public Graph(int inN, String[] inVert, String[][] inEString) {
+        n = inN;
+        vert = inVert;
+        eString = inEString;
+        fill(eString);
+    }
+    public void fill(String[][] in) {
+        edge = new int[n][n];
+        for(int i = 0; i < n; i++) {
+            for(int j = 0; j < n; j++) {
+                if(in[i][j].equals("!") == true) {
+                    edge[i][j] = Integer.MAX_VALUE;
+                } else {
+                    edge[i][j] = Integer.parseInt(in[i][j]);
+                }
+            }
+        }
+    }
+    public void printEach() {
         
-        return 
     }
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -23,21 +43,19 @@ class GraphAlgorithms {
         String csvFile = "input.csv";
         BufferedReader br = null;
         String line = "";
-        Graph g = new Graph();
-        int i = 0;
-        String[] vert = new String[0];          //array of vertices (A, B, etc.)
-        int[][] edge = new int[0][0];           //array of edges (1, 12, etc.)
-        String[][] eTemp = new String[0][0];    //array of edges as Strings
+        int n = 0;    //number of columns
+        String[] vert = new String[0];
+        String [][] eTemp = new String[0][0];
         
         try {
             br = new BufferedReader(new FileReader(csvFile));
             line = br.readLine();
-            int n = (line.length() - (line.length()/2));    //number of columns
+            n = (line.length() - (line.length()/2));    //number of columns
             vert = new String[n];
-            edge = new int[n][n];
             eTemp = new String[n][n];
             System.out.println(line);
             vert = line.split(",");
+            int i = 0;
             while((line = br.readLine()) != null) {
                 System.out.println(line);
                 eTemp[i] = line.split(",");
@@ -57,6 +75,6 @@ class GraphAlgorithms {
             }
         }   //end of try
         
-        edge = g.fill(eTemp, edge);
+        Graph g = new Graph(n, vert, eTemp);
     }
 }
