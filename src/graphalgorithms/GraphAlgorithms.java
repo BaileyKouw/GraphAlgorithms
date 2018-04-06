@@ -54,8 +54,8 @@ class pQueue {
                     arr[i] = arr[i + 1];
                 }
             }
-            while(clear < bottom) {
-                clear = 1;
+            while(clear < bottom - 1) {
+                clear = 0;
                 for(int i = 0; i < bottom - 1; i++) {
                     if(arr[i].pe > arr[i + 1].pe) {
                         temp = arr[i];
@@ -190,6 +190,9 @@ class GraphAlgorithms {
         pQueue q = new pQueue(4);
         q.push(new Node(6, 1));
         q.push(new Node(5, 2));
+        q.push(new Node(3, 5));
+        q.push(new Node(4, 8));
+        q.push(new Node(1, 3));
         q.print();
     }
 }
