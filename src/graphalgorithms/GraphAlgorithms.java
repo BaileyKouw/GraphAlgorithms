@@ -7,8 +7,8 @@ import java.io.IOException;
 
 /*
  * Authors: Bailey Kouwenhoven and J. Beckett Sweeney
- * Date: 
- * Overview: 
+ * Date: April 10, 2018
+ * Overview: Programming Assignment 2 for CSCI 232 
  */
 ////////////////////////////////////////////////////////////////////////////////
 class Node {
