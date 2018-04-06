@@ -35,13 +35,43 @@ class pQueue {
         Node n = arr[0];
         arr[0] = null;
         sort();
+        bottom--;
         return n;
     }
-    public void peek() {
-        //if arr[0] == null, return nothing
+    public Node peek() {
+        return arr[0];
     }
     public void sort() {
-        //sort
+        Node temp;
+        int clear = 0;
+        if(bottom == 0) {
+            //queue is empty
+        } else if(bottom == 1) {
+            //sorted
+        } else if(bottom >= 2) {
+            if(arr[0] == null) {
+                for(int i = 0; i < bottom; i++) {
+                    arr[i] = arr[i + 1];
+                }
+            }
+            while(clear < bottom) {
+                clear = 1;
+                for(int i = 0; i < bottom - 1; i++) {
+                    if(arr[i].pe > arr[i + 1].pe) {
+                        temp = arr[i];
+                        arr[i] = arr[i + 1];
+                        arr[i + 1] = temp;
+                    } else {
+                        clear++;
+                    }
+                }
+            }
+        }
+    }
+    public void print() {
+        for(int i = 0; i < bottom; i++) {
+            System.out.println(arr[i].pe + " " + arr[i].pv);
+        }
     }
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -158,5 +188,9 @@ class GraphAlgorithms {
         
         Graph g = new Graph(n, vert, eTemp);
         g.printEach();
+        pQueue q = new pQueue(4);
+        q.push(new Node(6, 1));
+        q.push(new Node(5, 2));
+        q.print();
     }
 }
