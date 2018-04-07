@@ -14,13 +14,16 @@ import java.io.IOException;
  * Special Instructions: 
  *      - In the input file, represent a lack of edge as either an infinity
  *          symbol or as a question mark.
- *      - Do not input a graph that has any vertices that
- *          connect to themselves.
+ *      - Do not input a graph that has any vertices that connect to 
+ *          themselves. (Prim's and Kruskal's Algorithm's can handle this,
+ *          but Floyd Warshall's cannot)
  *      - Prim's and Kruskal's Algorithm's require a weighted undirected graph.
- *      - Floyd-Warshall's Algorithm requires a weighted directed graph.
+ *      - Floyd-Warshall's Algorithm requires either a weighted directed graph
+ *          or a weighted undirected graph.
  *      - When testing, input an appropriate graph, then at the very bottom of
  *          the main method, comment out whichever algorithms are inappropriate
- *          for the input graph.
+ *          for the input graph. (all three work for undirected, only Floyd-
+ *          Warshall's works for directed)
  */
 ////////////////////////////////////////////////////////////////////////////////
 class Node {
@@ -148,7 +151,21 @@ class Graph {
                     if ((q.peek().pvs == tree[i].pvs && q.peek().pve == tree[i].pve) || (q.peek().pvs == tree[i].pve && q.peek().pve == tree[i].pvs)) {
                         q.pop();
                     } else {
-                        clear++;
+                        boolean safeS = true;
+                        boolean safeE = true;
+                        for (int j = 0; j < iTaken; j++) {
+                            if (q.peek().pvs == taken[j]) {
+                                safeS = false;
+                            }
+                            if (q.peek().pve == taken[j]) {
+                                safeE = false;
+                            }
+                        }
+                        if (safeS == false && safeE == false) {
+                            q.pop();
+                        } else {
+                            clear++;
+                        }
                     }
                 }
             }
@@ -168,13 +185,12 @@ class Graph {
     public void kruskal(int[][] in) {
         int[][] g = iCopy(edge);
         pQueue q = new pQueue(n);
-        //int[] taken = new int[n];   //vertices already included
+        int[] taken = new int[n];   //vertices already included
         Node[] tree = new Node[n - 1];
-        //int iTaken = 0;     //current empty taken slot
+        int iTaken = 0;     //current empty taken slot
         int iTree = 0;      //current empty tree slot
-
-        //taken[iTaken] = start;
-        //iTaken++;
+        int addS = 0;
+        int addE = 0;
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 if (j != i) {
@@ -183,6 +199,24 @@ class Graph {
             }
         }
         tree[iTree] = q.pop();
+        for (int i = 0; i < iTree; i++) {
+            if (taken[i] != tree[iTree].pvs) {
+                addS++;
+            }
+            if (taken[i] != tree[iTree].pve) {
+                addE++;
+            }
+        }
+        if (addS == iTaken) {
+            taken[iTaken] = tree[iTree].pvs;
+            iTaken++;
+            addS = 0;
+        }
+        if (addE == iTaken) {
+            taken[iTaken] = tree[iTree].pve;
+            iTaken++;
+            addE = 0;
+        }
         iTree++;
         q.clear();
         while (tree[tree.length - 1] == null) {
@@ -200,14 +234,44 @@ class Graph {
                     if ((q.peek().pvs == tree[i].pvs && q.peek().pve == tree[i].pve) || (q.peek().pvs == tree[i].pve && q.peek().pve == tree[i].pvs)) {
                         q.pop();
                     } else {
-                        clear++;
+                        boolean safeS = true;
+                        boolean safeE = true;
+                        for (int j = 0; j < iTaken; j++) {
+                            if (q.peek().pvs == taken[j]) {
+                                safeS = false;
+                            }
+                            if (q.peek().pve == taken[j]) {
+                                safeE = false;
+                            }
+                        }
+                        if (safeS == false && safeE == false) {
+                            q.pop();
+                        } else {
+                            clear++;
+                        }
                     }
                 }
             }
             tree[iTree] = q.pop();
-            //taken[iTaken] = tree[iTree].pve;
+            for (int i = 0; i < iTree; i++) {
+                if (taken[i] != tree[iTree].pvs) {
+                    addS++;
+                }
+                if (taken[i] != tree[iTree].pve) {
+                    addE++;
+                }
+            }
+            if (addS == iTaken) {
+                taken[iTaken] = tree[iTree].pvs;
+                iTaken++;
+                addS = 0;
+            }
+            if (addE == iTaken) {
+                taken[iTaken] = tree[iTree].pve;
+                iTaken++;
+                addE = 0;
+            }
             iTree++;
-            //iTaken++;
             q.clear();
         }
         System.out.println("Kruskal's Tree: ");
@@ -318,8 +382,8 @@ class GraphAlgorithms {
                 }
             }
         }   //end of try
-        */
-        
+         */
+
         int n = 7;    //number of columns
         String[] vert = new String[7];
         String[][] eTemp = new String[7][7];
@@ -334,7 +398,7 @@ class GraphAlgorithms {
             for (int j = 0; j < n; j++) {
                 if (eTemp[i][j] == null) {
                     String in;
-                    int num = (int)(Math.random() * 10);
+                    int num = (int) (Math.random() * 10);
                     if (num == 0) {
                         in = "?";
                     } else {
@@ -344,7 +408,7 @@ class GraphAlgorithms {
                 }
             }
         }
-        
+
         Graph g = new Graph(n, vert, eTemp);
         g.printEach();
         g.prim(g.edge);
