@@ -14,9 +14,6 @@ import java.io.IOException;
  * Special Instructions: 
  *      - In the input file, represent a lack of edge as either an infinity
  *          symbol or as a question mark.
- *      - Do not input a graph that has any vertices that connect to 
- *          themselves. (Prim's and Kruskal's Algorithm's can handle this,
- *          but Floyd Warshall's cannot)
  *      - Prim's and Kruskal's Algorithm's require a weighted undirected graph.
  *      - Floyd-Warshall's Algorithm requires either a weighted directed graph
  *          or a weighted undirected graph.
@@ -126,7 +123,7 @@ class Graph {
     }
 
     public void prim(int[][] in) {
-        int[][] g = iCopy(edge);
+        int[][] g = iCopy(in);
         pQueue q = new pQueue(n);
         int[] taken = new int[n];   //vertices already included
         Node[] tree = new Node[n - 1];
@@ -140,7 +137,9 @@ class Graph {
             for (int i = 0; i < iTaken; i++) {
                 for (int j = 0; j < n; j++) {
                     if (j != taken[i]) {
-                        q.push(new Node(g[taken[i]][j], taken[i], j));
+                        if(g[taken[i]][j] > 0) {
+                            q.push(new Node(g[taken[i]][j], taken[i], j));
+                        }
                     }
                 }
             }
@@ -183,7 +182,7 @@ class Graph {
     }
 
     public void kruskal(int[][] in) {
-        int[][] g = iCopy(edge);
+        int[][] g = iCopy(in);
         pQueue q = new pQueue(n);
         int[] taken = new int[n];   //vertices already included
         Node[] tree = new Node[n - 1];
@@ -194,7 +193,9 @@ class Graph {
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 if (j != i) {
-                    q.push(new Node(g[i][j], i, j));
+                    if (g[i][j] > 0) {
+                        q.push(new Node(g[i][j], i, j));
+                    }
                 }
             }
         }
@@ -280,13 +281,31 @@ class Graph {
         }
         System.out.println();
     }
+    
+    public void floydWarshall(int[][] in) {
+        int[][] g = iCopy(in);
+        for (int i = 0; i < n; i++) {
+            g[i][i] = 0;
+        }
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                for (int k = 0; k < n; k++) {
+                    if(g[j][k] > g[j][i] + g[i][k] && g[j][i] != -1 && g[i][k] != -1) {
+                        g[j][k] = g[j][i] + g[i][k];
+                        fwPrint(g, j, k);
+                    }
+                }
+            }
+        }
+        iPrint(g);
+    }
 
     public void fill(String[][] in) {
         edge = new int[n][n];
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 if (in[i][j].equals("?") == true) {
-                    edge[i][j] = Integer.MAX_VALUE;
+                    edge[i][j] = -1;
                 } else {
                     edge[i][j] = Integer.parseInt(in[i][j]);
                 }
@@ -314,6 +333,58 @@ class Graph {
         return copy;
     }
 
+    public void fwPrint(int[][] in, int x, int y) {
+        System.out.print(" ");
+        for (int i = 0; i < n; i++) {
+            System.out.print("  " + vert[i]);
+        }
+        System.out.println();
+        for (int i = 0; i < n; i++) {
+            System.out.print(vert[i]);
+            for (int j = 0; j < n; j++) {
+                if(i == x && j == y) {
+                    System.out.print(" |" + in[i][j] + "|");
+                } else {
+                    System.out.print("  " + in[i][j]);
+                }
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+    
+    public void iPrint(int[][] in) {
+        System.out.print(" ");
+        for (int i = 0; i < n; i++) {
+            System.out.print("  " + vert[i]);
+        }
+        System.out.println();
+        for (int i = 0; i < n; i++) {
+            System.out.print(vert[i]);
+            for (int j = 0; j < n; j++) {
+                System.out.print("  " + in[i][j]);
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+    
+    public void sPrint(String[][] in) {
+        System.out.print(" ");
+        for (int i = 0; i < n; i++) {
+            System.out.print("  " + vert[i]);
+        }
+        System.out.println();
+        for (int i = 0; i < n; i++) {
+            System.out.print(vert[i]);
+            for (int j = 0; j < n; j++) {
+                System.out.print("  " + in[i][j]);
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+    
     public void printEach() {
         System.out.print(" ");
         for (int i = 0; i < n; i++) {
@@ -398,7 +469,7 @@ class GraphAlgorithms {
             for (int j = 0; j < n; j++) {
                 if (eTemp[i][j] == null) {
                     String in;
-                    int num = (int) (Math.random() * 10);
+                    int num = (int) (Math.random() * 100);
                     if (num == 0) {
                         in = "?";
                     } else {
@@ -413,5 +484,6 @@ class GraphAlgorithms {
         g.printEach();
         g.prim(g.edge);
         g.kruskal(g.edge);
+        g.floydWarshall(g.edge);
     }
 }
