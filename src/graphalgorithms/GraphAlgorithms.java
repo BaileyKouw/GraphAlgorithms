@@ -7,16 +7,30 @@ import java.io.IOException;
 
 /*
  * Authors: Bailey Kouwenhoven and J. Beckett Sweeney
- * Date: 
- * Overview: 
+ * Date: 7 April 2018
+ * Overview: This program reads in a .csv file containing an adjacency matrix
+ *      for a graph, then runs several algorithms on that graph to find 
+ *      different information about the graph.
+ * Special Instructions: 
+ *      - In the input file, represent a lack of edge as either an infinity
+ *          symbol or as a question mark.
+ *      - Do not input a graph that has any vertices that
+ *          connect to themselves.
+ *      - Prim's and Kruskal's Algorithm's require a weighted undirected graph.
+ *      - Floyd-Warshall's Algorithm requires a weighted directed graph.
+ *      - When testing, input an appropriate graph, then at the very bottom of
+ *          the main method, comment out whichever algorithms are inappropriate
+ *          for the input graph.
  */
 ////////////////////////////////////////////////////////////////////////////////
 class Node {
-    int pe; //prim's edge
-    int pv; //prim's vertex
-    public Node(int e, int v) {
+    int pe;     //prim's edge weight
+    int pvs;    //prim's starting vertex
+    int pve;    //prim's ending vertex
+    public Node(int e, int vs, int ve) {
         pe = e;
-        pv = v;
+        pvs = vs;
+        pve = ve;
     }
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -47,10 +61,10 @@ class pQueue {
         if(bottom == 0) {
             //queue is empty
         } else if(bottom == 1) {
-            //sorted
+            //only one element
         } else if(bottom >= 2) {
             if(arr[0] == null) {
-                for(int i = 0; i < bottom; i++) {
+                for(int i = 0; i < bottom - 1; i++) {
                     arr[i] = arr[i + 1];
                 }
             }
@@ -68,10 +82,17 @@ class pQueue {
             }
         }
     }
+    public void clear() {
+        for(int i = 0; i < arr.length; i++) {
+            arr[i] = null;
+        }
+        bottom = 0;
+    }
     public void print() {
         for(int i = 0; i < bottom; i++) {
-            System.out.println(arr[i].pe + " " + arr[i].pv);
+            System.out.println(arr[i].pe + " " + arr[i].pvs + "-" + arr[i].pve);
         }
+        System.out.println();
     }
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -88,13 +109,51 @@ class Graph {
     }
     public void prim(int[][] in) {
         int[][] g = iCopy(edge);
+        pQueue q = new pQueue(n);
+        int[] taken = new int[n];   //vertices already included
+        Node[] tree = new Node[n - 1];
+        int iTaken = 0;     //current empty taken slot
+        int iTree = 0;      //current empty tree slot
+        int start = (int)(Math.random() * n);
         
+        taken[iTaken] = start;
+        iTaken++;
+        while(tree[tree.length - 1] == null) {
+            for(int i = 0; i < iTaken; i++) {
+                for(int j = 0; j < n; j++) {
+                    if(j != taken[i]) {
+                        q.push(new Node(g[taken[i]][j], taken[i], j));
+                    }
+                }
+            }
+            int clear = 0;
+            while(clear < iTree) {
+                clear = 0;
+                for(int i = 0; i < iTree; i++) {
+                    if((q.peek().pvs == tree[i].pvs && q.peek().pve == tree[i].pve) || (q.peek().pvs == tree[i].pve && q.peek().pve == tree[i].pvs)) {
+                        q.pop();
+                    } else {
+                        clear++;
+                    }
+                }
+            }
+            tree[iTree] = q.pop();
+            taken[iTaken] = tree[iTree].pve;
+            iTree++;
+            iTaken++;
+            q.clear();
+        }
+        System.out.println("Prim's Tree: ");
+        for(int i = 0; i < tree.length; i++) {
+            System.out.print(vert[tree[i].pvs] + vert[tree[i].pve] + " ");
+        }
+        System.out.println();
     }
     public void fill(String[][] in) {
         edge = new int[n][n];
         for(int i = 0; i < n; i++) {
             for(int j = 0; j < n; j++) {
-                if(in[i][j].equals("!") == true) {
+                if(in[i][j].equals("?") == true) {
                     edge[i][j] = Integer.MAX_VALUE;
                 } else {
                     edge[i][j] = Integer.parseInt(in[i][j]);
@@ -145,12 +204,12 @@ class Graph {
             }
             System.out.println();
         }
+        System.out.println();
     }
 }
 ////////////////////////////////////////////////////////////////////////////////
 class GraphAlgorithms {
     public static void main(String[] args) {
-        System.out.println("how the hell do commit");
         String csvFile = "input.csv";
         BufferedReader br = null;
         String line = "";
@@ -188,12 +247,6 @@ class GraphAlgorithms {
         
         Graph g = new Graph(n, vert, eTemp);
         g.printEach();
-        pQueue q = new pQueue(4);
-        q.push(new Node(6, 1));
-        q.push(new Node(5, 2));
-        q.push(new Node(3, 5));
-        q.push(new Node(4, 8));
-        q.push(new Node(1, 3));
-        q.print();
+        g.prim(g.edge);
     }
 }
