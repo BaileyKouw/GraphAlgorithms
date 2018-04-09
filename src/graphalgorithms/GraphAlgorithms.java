@@ -7,7 +7,7 @@ import java.io.IOException;
 
 /*
  * Authors: Bailey Kouwenhoven and J. Beckett Sweeney
- * Date: 7 April 2018
+ * Date: 8 April 2018
  * Overview: This program reads in a .csv file containing an adjacency matrix
  *      for a graph, then runs several algorithms on that graph to find 
  *      different information about the graph.
@@ -25,16 +25,16 @@ import java.io.IOException;
 ////////////////////////////////////////////////////////////////////////////////
 class Node {
 
-    int pe;     //prim's edge weight
-    int pvs;    //prim's starting vertex
-    int pve;    //prim's ending vertex
+    int e;     //edge weight
+    int vs;    //starting vertex
+    int ve;    //ending vertex
 
-    public Node(int e, int vs, int ve) {
-        pe = e;
-        pvs = vs;
-        pve = ve;
+    public Node(int eIn, int vsIn, int veIn) {
+        e = eIn;
+        vs = vsIn;
+        ve = veIn;
     }
-}
+}   //end of Node class
 ////////////////////////////////////////////////////////////////////////////////
 
 class pQueue {
@@ -80,7 +80,7 @@ class pQueue {
             while (clear < bottom - 1) {
                 clear = 0;
                 for (int i = 0; i < bottom - 1; i++) {
-                    if (arr[i].pe > arr[i + 1].pe) {
+                    if (arr[i].e > arr[i + 1].e) {
                         temp = arr[i];
                         arr[i] = arr[i + 1];
                         arr[i + 1] = temp;
@@ -90,7 +90,7 @@ class pQueue {
                 }
             }
         }
-    }
+    }   //end of sort()
 
     public void clear() {
         for (int i = 0; i < arr.length; i++) {
@@ -101,11 +101,11 @@ class pQueue {
 
     public void print() {
         for (int i = 0; i < bottom; i++) {
-            System.out.println(arr[i].pe + " " + arr[i].pvs + "-" + arr[i].pve);
+            System.out.println(arr[i].e + " " + arr[i].vs + "-" + arr[i].ve);
         }
         System.out.println();
     }
-}
+}   //end of pQueue class
 ////////////////////////////////////////////////////////////////////////////////
 
 class Graph {
@@ -137,7 +137,7 @@ class Graph {
             for (int i = 0; i < iTaken; i++) {
                 for (int j = 0; j < n; j++) {
                     if (j != taken[i]) {
-                        if(g[taken[i]][j] > 0) {
+                        if (g[taken[i]][j] > 0) {
                             q.push(new Node(g[taken[i]][j], taken[i], j));
                         }
                     }
@@ -147,16 +147,16 @@ class Graph {
             while (clear < iTree) {
                 clear = 0;
                 for (int i = 0; i < iTree; i++) {
-                    if ((q.peek().pvs == tree[i].pvs && q.peek().pve == tree[i].pve) || (q.peek().pvs == tree[i].pve && q.peek().pve == tree[i].pvs)) {
+                    if ((q.peek().vs == tree[i].vs && q.peek().ve == tree[i].ve) || (q.peek().vs == tree[i].ve && q.peek().ve == tree[i].vs)) {
                         q.pop();
                     } else {
                         boolean safeS = true;
                         boolean safeE = true;
                         for (int j = 0; j < iTaken; j++) {
-                            if (q.peek().pvs == taken[j]) {
+                            if (q.peek().vs == taken[j]) {
                                 safeS = false;
                             }
-                            if (q.peek().pve == taken[j]) {
+                            if (q.peek().ve == taken[j]) {
                                 safeE = false;
                             }
                         }
@@ -169,27 +169,33 @@ class Graph {
                 }
             }
             tree[iTree] = q.pop();
-            taken[iTaken] = tree[iTree].pve;
+            taken[iTaken] = tree[iTree].ve;
             iTree++;
             iTaken++;
             q.clear();
         }
         System.out.println("Prim's Tree: ");
         for (int i = 0; i < tree.length; i++) {
-            System.out.print(vert[tree[i].pvs] + vert[tree[i].pve] + " ");
+            System.out.print(vert[tree[i].vs] + vert[tree[i].ve] + " ");
         }
         System.out.println();
-    }
+        System.out.println();
+    }   //end of prim()
 
-    public void kruskal(int[][] in) {
-        int[][] g = iCopy(in);
-        pQueue q = new pQueue(n);
-        int[] taken = new int[n];   //vertices already included
+    public void altKruskal(int[][] in) {
+        int[][] g = iCopy(in);          //matrix
+        pQueue q = new pQueue(n);       //priority queue
+        int[] cu = new int[n];      //cluster u
+        int icu = 0;                    //cluster u iterator
+        int[] cv = new int[n];      //cluster v
+        int icv = 0;                    //cluster v iterator
         Node[] tree = new Node[n - 1];
-        int iTaken = 0;     //current empty taken slot
-        int iTree = 0;      //current empty tree slot
-        int addS = 0;
-        int addE = 0;
+        int iTree = 0;
+        Node temp;
+        for (int i = 0; i < n; i++) {
+            cu[i] = -2;
+            cv[i] = -2;
+        }
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 if (j != i) {
@@ -199,106 +205,211 @@ class Graph {
                 }
             }
         }
-        tree[iTree] = q.pop();
-        for (int i = 0; i < iTree; i++) {
-            if (taken[i] != tree[iTree].pvs) {
-                addS++;
-            }
-            if (taken[i] != tree[iTree].pve) {
-                addE++;
-            }
-        }
-        if (addS == iTaken) {
-            taken[iTaken] = tree[iTree].pvs;
-            iTaken++;
-            addS = 0;
-        }
-        if (addE == iTaken) {
-            taken[iTaken] = tree[iTree].pve;
-            iTaken++;
-            addE = 0;
-        }
-        iTree++;
-        q.clear();
         while (tree[tree.length - 1] == null) {
+            temp = q.pop();
+            cu[icu] = temp.vs;
+            icu++;
+            cu = clusterSort(cu, icu);
+            cv[icv] = temp.ve;
+            icv++;
+            cv = clusterSort(cv, icv);
+            boolean same = true;
             for (int i = 0; i < n; i++) {
-                for (int j = 0; j < n; j++) {
-                    if (j != i) {
+                if (cu[i] != cv[i]) {
+                    same = false;
+                }
+            }
+            if (same == false) {
+                tree[iTree] = temp;
+                iTree++;
+                for (int i = 0; i < icv; i++) {
+                    cu[icu] = cv[i];
+                    icu++;
+                }
+            }
+        }
+    }
+
+    public int[] clusterSort(int[] in, int max) {
+        for (int i = 0; i < in.length; i++) {
+            for (int j = 0; j < max; j++) {
+                if (in[j] != -2 && in[j + 1] != -2) {
+                    if (in[j] > in[j + 1]) {
+                        int temp = in[j];
+                        in[j] = in[j + 1];
+                        in[j + 1] = temp;
+                    } else if (in[j] == in[j + 1]) {
+                        if ((j + 1) >= in.length) {
+                            in[j + 1] = -2;
+                        } else {
+                            in[j + 1] = in[j + 2];
+                        }
+                    }
+                }
+            }
+        }
+        return in;
+    }
+    
+    public void kruskal(int[][] in) {
+        int[][] g = iCopy(in);
+        pQueue q = new pQueue(n);
+        int[] taken = new int[n];   //vertices already included
+        Node[] tree = new Node[n - 1];
+        int iTaken = 0;     //current empty taken slot
+        int iTree = 0;      //current empty tree slot
+        int addS = 0;
+        int addE = 0;
+        int temp;
+        for (int i = 0; i < n; i++) {
+            taken[i] = -2;
+        }
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (j != i) {
+                    if (g[i][j] > 0) {
                         q.push(new Node(g[i][j], i, j));
                     }
                 }
             }
-            int clear = 0;
-            while (clear < iTree) {
-                clear = 0;
-                for (int i = 0; i < iTree; i++) {
-                    if ((q.peek().pvs == tree[i].pvs && q.peek().pve == tree[i].pve) || (q.peek().pvs == tree[i].pve && q.peek().pve == tree[i].pvs)) {
-                        q.pop();
-                    } else {
-                        boolean safeS = true;
-                        boolean safeE = true;
-                        for (int j = 0; j < iTaken; j++) {
-                            if (q.peek().pvs == taken[j]) {
-                                safeS = false;
-                            }
-                            if (q.peek().pve == taken[j]) {
-                                safeE = false;
-                            }
-                        }
-                        if (safeS == false && safeE == false) {
-                            q.pop();
-                        } else {
-                            clear++;
+        }
+        printN(tree, "tree");
+        printI(taken, "taken");
+
+        tree[iTree] = q.pop();
+        taken[iTaken] = tree[iTree].vs;
+        iTaken++;
+        taken[iTaken] = tree[iTree].ve;
+        iTaken++;
+
+        printN(tree, "tree");
+        printI(taken, "taken");
+        System.out.println();
+
+        iTree++;
+        q.clear();
+        while (tree[tree.length - 1] == null) { //while the tree is not full
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    if (j != i) {
+                        if (g[i][j] > 0) {
+                            q.push(new Node(g[i][j], i, j));
                         }
                     }
                 }
             }
-            tree[iTree] = q.pop();
-            for (int i = 0; i < iTree; i++) {
-                if (taken[i] != tree[iTree].pvs) {
+
+            int clear = 0;
+            while (clear < iTree) { //checks for vertices already used
+                clear = 0;
+                System.out.println("peek: " + q.peek());
+
+                if (q.peek() != null) {
+                    for (int i = 0; i < iTree; i++) {
+                        System.out.println("tree: " + tree[i]);
+                        if ((q.peek().vs == tree[i].vs && q.peek().ve == tree[i].ve) || (q.peek().vs == tree[i].ve && q.peek().ve == tree[i].vs)) {
+                            q.pop();
+                        } else {
+                            boolean safeS = true;
+                            boolean safeE = true;
+                            for (int j = 0; j < iTaken; j++) {
+                                if (q.peek().vs == taken[j]) {
+                                    safeS = false;
+                                }
+                                if (q.peek().ve == taken[j]) {
+                                    safeE = false;
+                                }
+                            }
+                            if (safeS == false && safeE == false) {
+                                q.pop();
+                            } else {
+                                clear++;
+                            }
+                        }
+                    }
+                } else {
+                    clear = iTree;
+                }
+
+            }   //end of lesser while loop
+            if (q.peek() != null) {
+                tree[iTree] = q.pop();
+            }
+            addS = 0;
+            addE = 0;
+            for (int i = 0; i < iTaken; i++) {
+                if (taken[i] != tree[iTree].vs) {
                     addS++;
                 }
-                if (taken[i] != tree[iTree].pve) {
+                if (taken[i] != tree[iTree].ve) {
                     addE++;
                 }
             }
-            if (addS == iTaken) {
-                taken[iTaken] = tree[iTree].pvs;
+            temp = iTaken;
+            if (addS == temp) {
+                taken[iTaken] = tree[iTree].vs;
                 iTaken++;
                 addS = 0;
             }
-            if (addE == iTaken) {
-                taken[iTaken] = tree[iTree].pve;
+            if (addE == temp) {
+                taken[iTaken] = tree[iTree].ve;
                 iTaken++;
                 addE = 0;
             }
+
+            printN(tree, "tree");
+            printI(taken, "taken");
+            System.out.println();
+
             iTree++;
             q.clear();
-        }
+        }   //end of greater while loop
         System.out.println("Kruskal's Tree: ");
         for (int i = 0; i < tree.length; i++) {
-            System.out.print(vert[tree[i].pvs] + vert[tree[i].pve] + " ");
+            System.out.print(vert[tree[i].vs] + vert[tree[i].ve] + " ");
+        }
+        System.out.println();
+        System.out.println();
+    }   //end of kruskal
+
+    public void printN(Node[] in, String s) {
+        System.out.print(s + ": ");
+        for (int i = 0; i < in.length; i++) {
+            if (in[i] != null) {
+                System.out.print(in[i].vs + "" + in[i].ve + " ");
+            }
         }
         System.out.println();
     }
-    
+
+    public void printI(int[] in, String s) {
+        System.out.print(s + ": ");
+        for (int i = 0; i < in.length; i++) {
+            System.out.print(in[i] + " ");
+        }
+        System.out.println();
+    }
+
     public void floydWarshall(int[][] in) {
         int[][] g = iCopy(in);
         for (int i = 0; i < n; i++) {
             g[i][i] = 0;
         }
+        System.out.println("Initial Floyd-Warshall's Matrix:");
+        iPrint(g);
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 for (int k = 0; k < n; k++) {
-                    if(g[j][k] > g[j][i] + g[i][k] && g[j][i] != -1 && g[i][k] != -1) {
+                    if (g[j][k] > g[j][i] + g[i][k] && g[j][i] != -1 && g[i][k] != -1) {
                         g[j][k] = g[j][i] + g[i][k];
                         fwPrint(g, j, k);
                     }
                 }
             }
         }
+        System.out.println("Final Floyd-Warshall Matrix:");
         iPrint(g);
-    }
+    }   //end of floydWarshall
 
     public void fill(String[][] in) {
         edge = new int[n][n];
@@ -334,86 +445,73 @@ class Graph {
     }
 
     public void fwPrint(int[][] in, int x, int y) {
-        System.out.print(" ");
+        /*print method for Floyd-Warshall's Algorithm. prints out integer
+            matrix with bars on either side of the value that has changed.*/
         for (int i = 0; i < n; i++) {
-            System.out.print("  " + vert[i]);
+            System.out.print("   " + vert[i] + " ");
         }
         System.out.println();
         for (int i = 0; i < n; i++) {
             System.out.print(vert[i]);
             for (int j = 0; j < n; j++) {
-                if(i == x && j == y) {
-                    System.out.print(" |" + in[i][j] + "|");
+                System.out.print(" ");
+                if (i == x && j == y) {
+                    if (in[i][j] < 10 && in[i][j] >= 0) {
+                        System.out.print("|" + in[i][j] + "|");
+                    } else {
+                        System.out.print("|" + in[i][j] + "|");
+                    }
+                } else if (in[i][j] < 10 && in[i][j] >= 0) {
+                    System.out.print(" " + in[i][j] + "  ");
                 } else {
-                    System.out.print("  " + in[i][j]);
+                    System.out.print(" " + in[i][j] + " ");
                 }
             }
             System.out.println();
         }
         System.out.println();
     }
-    
+
     public void iPrint(int[][] in) {
-        System.out.print(" ");
+        //System.out.print(" ");
         for (int i = 0; i < n; i++) {
-            System.out.print("  " + vert[i]);
+            System.out.print("   " + vert[i] + " ");
         }
         System.out.println();
         for (int i = 0; i < n; i++) {
             System.out.print(vert[i]);
             for (int j = 0; j < n; j++) {
-                System.out.print("  " + in[i][j]);
+                if (in[i][j] < 10 && in[i][j] >= 0) {
+                    System.out.print("  " + in[i][j] + "  ");
+                } else {
+                    System.out.print("  " + in[i][j] + " ");
+                }
             }
             System.out.println();
         }
         System.out.println();
     }
-    
+
     public void sPrint(String[][] in) {
-        System.out.print(" ");
+        //System.out.print(" ");
         for (int i = 0; i < n; i++) {
-            System.out.print("  " + vert[i]);
+            System.out.print("   " + vert[i] + " ");
         }
         System.out.println();
         for (int i = 0; i < n; i++) {
             System.out.print(vert[i]);
             for (int j = 0; j < n; j++) {
-                System.out.print("  " + in[i][j]);
+                if (in[i][j].length() < 2) {
+                    System.out.print("  " + in[i][j] + "  ");
+                } else {
+                    System.out.print("  " + in[i][j] + " ");
+                }
             }
             System.out.println();
         }
         System.out.println();
     }
-    
-    public void printEach() {
-        System.out.print(" ");
-        for (int i = 0; i < n; i++) {
-            System.out.print("  " + vert[i]);
-        }
-        System.out.println();
-        for (int i = 0; i < n; i++) {
-            System.out.print(vert[i]);
-            for (int j = 0; j < n; j++) {
-                System.out.print("  " + eString[i][j]);
-            }
-            System.out.println();
-        }
-        System.out.println();
-        System.out.print(" ");
-        for (int i = 0; i < n; i++) {
-            System.out.print("  " + vert[i]);
-        }
-        System.out.println();
-        for (int i = 0; i < n; i++) {
-            System.out.print(vert[i]);
-            for (int j = 0; j < n; j++) {
-                System.out.print("  " + edge[i][j]);
-            }
-            System.out.println();
-        }
-        System.out.println();
-    }
-}
+}   //end of Graph class
 ////////////////////////////////////////////////////////////////////////////////
 
 class GraphAlgorithms {
@@ -470,20 +568,22 @@ class GraphAlgorithms {
                 if (eTemp[i][j] == null) {
                     String in;
                     int num = (int) (Math.random() * 100);
-                    if (num == 0) {
+                    if (num < 10) {
                         in = "?";
                     } else {
                         in = Integer.toString(num);
                     }
                     eTemp[i][j] = in;
+                    eTemp[j][i] = in;
                 }
             }
         }
 
         Graph g = new Graph(n, vert, eTemp);
-        g.printEach();
+        g.sPrint(g.eString);
+        g.iPrint(g.edge);
         g.prim(g.edge);
         g.kruskal(g.edge);
-        g.floydWarshall(g.edge);
+        //g.floydWarshall(g.edge);
     }
 }
