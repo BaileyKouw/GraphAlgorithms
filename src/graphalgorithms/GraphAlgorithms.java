@@ -50,7 +50,7 @@ class pQueue {
             //sorted
         } else if(bottom >= 2) {
             if(arr[0] == null) {
-                for(int i = 0; i < bottom; i++) {
+                for(int i = 0; i < bottom - 1; i++) {
                     arr[i] = arr[i + 1];
                 }
             }
