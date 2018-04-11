@@ -482,7 +482,7 @@ class Graph {
         }
         System.out.println();
     }
-
+  
     public void sPrint(String[][] in) {
         for (int i = 0; i < n; i++) {
             System.out.print("   " + vert[i] + " ");
