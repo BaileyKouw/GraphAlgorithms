@@ -7,12 +7,12 @@ import java.io.IOException;
 
 /*
  * Authors: Bailey Kouwenhoven and J. Beckett Sweeney
- * Date: 8 April 2018
+ * Date: 10 Apr 2018
  * Overview: This program reads in a .csv file containing an adjacency matrix
  *      for a graph, then runs several algorithms on that graph to find 
  *      different information about the graph.
  * Special Instructions: 
- *      - In the input file, represent a lack of edge as either an infinity
+ *      - In the input file (input.csv), represent a lack of edge as either an infinity
  *          symbol or as a question mark.
  *      - Prim's and Kruskal's Algorithm's require a weighted undirected graph.
  *      - Floyd-Warshall's Algorithm requires either a weighted directed graph
@@ -123,13 +123,13 @@ class Graph {
     }
 
     public void prim(int[][] in) {
-        int[][] g = iCopy(in);
-        pQueue q = new pQueue(n);
-        int[] taken = new int[n];   //vertices already included
-        Node[] tree = new Node[n - 1];
-        int iTaken = 0;     //current empty taken slot
-        int iTree = 0;      //current empty tree slot
-        int start = (int) (Math.random() * n);
+        int[][] g = iCopy(in);                  //matrix
+        pQueue q = new pQueue(n);               //priority queue
+        int[] taken = new int[n];               //vertices already included
+        Node[] tree = new Node[n - 1];          //tree
+        int iTaken = 0;                         //taken iterator
+        int iTree = 0;                          //tree iterator
+        int start = (int) (Math.random() * n);  //random starting vertex
 
         taken[iTaken] = start;
         iTaken++;
@@ -182,15 +182,14 @@ class Graph {
         System.out.println();
     }   //end of prim()
 
-
     public void kruskal(int[][] in) {
-        int[][] g = iCopy(in);          //matrix
-        pQueue q = new pQueue(n);       //priority queue
-        Node[] tree = new Node[n - 1];
-        int iTree = 0;
+        int[][] g = iCopy(in);              //matrix
+        pQueue q = new pQueue(n);           //priority queue
+        Node[] tree = new Node[n - 1];      //tree
+        int iTree = 0;                      //tree iterator
         Node temp;
-        int[][] taken = new int[n][n + 2];
-        int iTaken = 0;
+        int[][] taken = new int[n][n + 2];  //2D array of taken vertices
+        int iTaken = 0;                     //taken iterator
         for (int i = 0; i < taken.length; i++) {
             for (int j = 0; j < taken[i].length; j++) {
                 taken[i][j] = -2;
@@ -238,7 +237,9 @@ class Graph {
             if (safeS == false && safeE == false) {
                 //not safe
             } else if (safeS == true && safeE == true && taken[iTaken][0] != -2) {
-                iTaken++;
+                while (taken[iTaken][0] != -2) {
+                    iTaken++;
+                }
                 boolean inserted = false;
                 while (inserted == false) {
                     for (int i = 0; i < n; i++) {
@@ -250,17 +251,25 @@ class Graph {
                     }
                 }
                 compress(taken[iTaken]);
-                boolean needMerge = false;
-                for (int i = 0; i < taken[iTaken + 1].length; i++) {
-                    for (int j = 0; j < taken[iTaken].length; j++) {
-                        if (taken[iTaken + 1][i] != -2 && taken[iTaken + 1][i] == taken[iTaken][j]) {
-                            needMerge = true;
+                boolean merged = false;
+                for (int i = 0; i < taken.length; i++) {
+                    for (int j = 0; j < taken.length; j++) {
+                        for (int m = 0; m < taken[i].length; m++) {
+                            for (int n = 0; n < taken[j].length; n++) {
+                                if (taken[i][m] != -2 && taken[i][m] == taken[j][n] && i != j) {
+                                    merge(taken[i], taken[j]);
+                                    for (int k = j; k < taken.length - 1; k++) {
+                                        merge(taken[k], taken[k + 1]);
+                                        merged = true;
+                                        compress(taken[k]);
+                                    }
+                                }
+                            }
                         }
                     }
                 }
-                if (needMerge == true) {
-                    merge(taken[iTaken], taken[iTaken + 1]);
-                    iTaken--;
+                if (merged == true) {
+                    //iTaken--;
                 }
                 tree[iTree] = temp;
                 iTree++;
@@ -276,32 +285,41 @@ class Graph {
                     }
                 }
                 compress(taken[iTaken]);
-                boolean needMerge = false;
-                for (int i = 0; i < taken[iTaken + 1].length; i++) {
-                    for (int j = 0; j < taken[iTaken].length; j++) {
-                        if (taken[iTaken + 1][i] != -2 && taken[iTaken + 1][i] == taken[iTaken][j]) {
-                            needMerge = true;
+
+                boolean merged = false;
+                for (int i = 0; i < taken.length; i++) {
+                    for (int j = 0; j < taken.length; j++) {
+                        for (int m = 0; m < taken[i].length; m++) {
+                            for (int n = 0; n < taken[j].length; n++) {
+                                if (taken[i][m] != -2 && taken[i][m] == taken[j][n] && i != j) {
+                                    merge(taken[i], taken[j]);
+                                    for (int k = j; k < taken.length - 1; k++) {
+                                        merge(taken[k], taken[k + 1]);
+                                        merged = true;
+                                        compress(taken[k]);
+                                    }
+                                }
+                            }
                         }
                     }
                 }
-                if (needMerge == true) {
-                    for(int i = iTaken; i < (taken.length - 1); i++) {
-                        merge(taken[i], taken[i + 1]);
-                    }
-                    iTaken--;
-                } 
+                if (merged == true) {
+                    //iTaken--;
+                }
                 tree[iTree] = temp;
                 iTree++;
             }
         }
-        
+
         System.out.println("Kruskal's Tree: ");
         for (int i = 0; i < tree.length; i++) {
-            System.out.print(vert[tree[i].vs] + vert[tree[i].ve] + " ");
+            if (tree[i] != null) {
+                System.out.print(vert[tree[i].vs] + vert[tree[i].ve] + " ");
+            }
         }
         System.out.println();
         System.out.println();
-    }
+    }   //end of kruskal
 
     public void merge(int[] inA, int[] inB) {
         int insertsNeeded = 0;
@@ -447,7 +465,6 @@ class Graph {
     }
 
     public void iPrint(int[][] in) {
-        //System.out.print(" ");
         for (int i = 0; i < n; i++) {
             System.out.print("   " + vert[i] + " ");
         }
@@ -467,7 +484,6 @@ class Graph {
     }
   
     public void sPrint(String[][] in) {
-        //System.out.print(" ");
         for (int i = 0; i < n; i++) {
             System.out.print("   " + vert[i] + " ");
         }
@@ -491,7 +507,6 @@ class Graph {
 class GraphAlgorithms {
 
     public static void main(String[] args) {
-        /*
         String csvFile = "input.csv";
         BufferedReader br = null;
         String line = "";
@@ -504,11 +519,9 @@ class GraphAlgorithms {
             n = (line.length() - (line.length() / 2));    //number of columns
             vert = new String[n];
             eTemp = new String[n][n];
-            System.out.println(line);
             vert = line.split(",");
             int i = 0;
             while ((line = br.readLine()) != null) {
-                System.out.println(line);
                 eTemp[i] = line.split(",");
                 i++;
             }
@@ -525,37 +538,7 @@ class GraphAlgorithms {
                 }
             }
         }   //end of try
-         */
-
-        int n = 7;    //number of columns
-        String[] vert = new String[7];
-        String[][] eTemp = new String[7][7];
-        vert[0] = "A";
-        vert[1] = "B";
-        vert[2] = "C";
-        vert[3] = "D";
-        vert[4] = "E";
-        vert[5] = "F";
-        vert[6] = "G";
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (eTemp[i][j] == null) {
-                    String in;
-                    int num = (int) (Math.random() * 100);
-                    if (num < 10) {
-                        in = "?";
-                    } else {
-                        in = Integer.toString(num);
-                    }
-                    eTemp[i][j] = in;
-                    eTemp[j][i] = in;
-                }
-            }
-        }
-
         Graph g = new Graph(n, vert, eTemp);
-        g.sPrint(g.eString);
-        g.iPrint(g.edge);
         g.prim(g.edge);
         g.kruskal(g.edge);
         g.floydWarshall(g.edge);
