@@ -182,6 +182,7 @@ class Graph {
         System.out.println();
     }   //end of prim()
 
+
     public void kruskal(int[][] in) {
         int[][] g = iCopy(in);          //matrix
         pQueue q = new pQueue(n);       //priority queue
@@ -464,7 +465,7 @@ class Graph {
         }
         System.out.println();
     }
-
+  
     public void sPrint(String[][] in) {
         //System.out.print(" ");
         for (int i = 0; i < n; i++) {
